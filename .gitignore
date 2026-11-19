@@ -1,0 +1,13 @@
+# CDISC data is not redistributed here
+data/sdtm/
+data/adam/
+*.xpt
+
+# R
+.Rhistory
+.RData
+.Rproj.user/
+
+# OS
+.DS_Store
+Thumbs.db
