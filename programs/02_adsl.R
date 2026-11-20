@@ -46,3 +46,14 @@ trt_end <- ex %>%
 official_end <- adsl %>% select(USUBJID, TRTEDT_ref = TRTEDT)
 check_end <- trt_end %>% left_join(official_end, by = "USUBJID")
 sum(check_end$TRTEDT != check_end$TRTEDT_ref, na.rm = TRUE)   # expect 0
+
+
+# TRTDUR: treatment duration in days (frist and last day both count, so +1)
+trt_all <- trt_dates %>% 
+  left_join(trt_end, by = "USUBJID") %>% 
+  mutate(TRTDUR = as.numeric(TRTEDT - TRTSDT) + 1)
+
+# QC against the CDISC reference ADSL
+official_dur <- asl %>% select(USUBJID, TRTDUR_ref = TRTDUR)
+check_dur <- trt_all %>%  left_join(official_dur, by = "USUBJID")
+sum(check_dur$TRTDUR != check$TRTDUR_ref, na.rm = TRUE)
