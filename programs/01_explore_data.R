@@ -33,3 +33,4 @@ setdiff(names(adsl), names(dm))
 
 # 5. In ADAE, how many events are treatment-emergent (TRTEMFL)?
 adae %>% count(TRTEMFL)
+

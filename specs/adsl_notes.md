@@ -1,0 +1,1 @@
+TRT01A: derived from DM.ACTARM. 12 subjects (planned High, ACTARM Low) differ from CDISC reference ADSL, where TRT01A equals TRT01P. Difference documented, not changed.

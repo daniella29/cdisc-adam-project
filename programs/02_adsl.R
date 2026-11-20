@@ -54,6 +54,19 @@ trt_all <- trt_dates %>%
   mutate(TRTDUR = as.numeric(TRTEDT - TRTSDT) + 1)
 
 # QC against the CDISC reference ADSL
-official_dur <- asl %>% select(USUBJID, TRTDUR_ref = TRTDUR)
+official_dur <- adsl %>% select(USUBJID, TRTDUR_ref = TRTDUR)
 check_dur <- trt_all %>%  left_join(official_dur, by = "USUBJID")
-sum(check_dur$TRTDUR != check$TRTDUR_ref, na.rm = TRUE)
+sum(check_dur$TRTDUR != check_dur$TRTDUR_ref, na.rm = TRUE)
+
+
+# TRT01P / TRT01A from DM
+trt_arms <- dm %>% select(USUBJID, TRT01P = ARM, TRT01A = ACTARM)
+
+check_arm <- trt_all %>% 
+  left_join(trt_arms, by = "USUBJID") %>% 
+  left_join(adsl %>% select(USUBJID, TRT01P_ref = TRT01P, TRT01A_ref = TRT01A),
+            by = "USUBJID")
+
+sum(check_arm$TRT01P != check_arm$TRT01P_ref, na.rm = TRUE)
+sum(check_arm$TRT01A != check_arm$TRT01A_ref, na.rm = TRUE)
+sum(is.na(check_arm$TRT01P_ref))
