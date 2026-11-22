@@ -70,3 +70,25 @@ check_arm <- trt_all %>%
 sum(check_arm$TRT01P != check_arm$TRT01P_ref, na.rm = TRUE)
 sum(check_arm$TRT01A != check_arm$TRT01A_ref, na.rm = TRUE)
 sum(is.na(check_arm$TRT01P_ref))
+
+
+# ---- SAFFL: Safety Population Flag -------------------------------------
+# Rule: "Y" if the subject has at least one exposure record with a start date.
+# Note: placebo subjects have EXDOSE = 0 but ARE treated (placebo), so the
+# rule "any EXDOSE > 0" is wrong: it wrongly flags 86 placebo subjects "N".
+# Safety analysis needs placebo subjects to compare adverse events.
+
+saffl <- ex %>%
+  group_by(USUBJID) %>%
+  summarise(SAFFL = if_else(is.na(min(EXSTDT)), "N", "Y"), .groups = "drop")
+
+# QC against the CDISC reference ADSL (.x = reference, .y = mine)
+qc_saffl <- adsl %>%
+  left_join(saffl, by = "USUBJID") %>%
+  summarise(
+    n_match    = sum(SAFFL.x == SAFFL.y),                  # expect 254
+    n_differ   = sum(SAFFL.x != SAFFL.y),                  # expect 0
+    n_missing  = sum(is.na(SAFFL.y))                       # expect 0
+  )
+
+qc_saffl
