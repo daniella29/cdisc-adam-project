@@ -92,3 +92,23 @@ qc_saffl <- adsl %>%
   )
 
 qc_saffl
+
+# Creating ITTFL
+# This is intent to treat flag
+# Anyone who passes screening = Y and fails screening = N
+# Screening is found in dm$ARM
+
+ittfl_test <- dm %>% 
+  mutate(ITTFL = if_else(ARM == "Screen Failure", "N", "Y"))
+
+# QC comparing to ADSL
+ittfl_qc <- adsl %>%
+  rename(ITTFL_ref = ITTFL) %>% 
+  select(USUBJID, ITTFL_ref) %>% 
+  left_join(ittfl_test, by = "USUBJID") %>% 
+  summarise(
+    n_match = sum(ITTFL == ITTFL_ref),
+    n_differ = sum(ITTFL != ITTFL_ref),
+    n_missing = sum(is.na(ITTFL))
+  )
+  
