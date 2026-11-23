@@ -11,6 +11,7 @@ library(dplyr)
 ex   <- read_xpt("data/sdtm/ex.xpt")
 dm   <- read_xpt("data/sdtm/dm.xpt")
 adsl <- read_xpt("data/adam/adsl.xpt")   # CDISC reference, used for QC only
+adae <- read_xpt("data/adam/adae.xpt")   # CDISC reference, QC only
 
 # Convert character dates (ISO 8601) to R dates
 ex <- ex %>% mutate(EXSTDT = as.Date(EXSTDTC), EXENDT = as.Date(EXENDTC))
@@ -112,3 +113,44 @@ ittfl_qc <- adsl %>%
     n_missing = sum(is.na(ITTFL))
   )
   
+
+# Moving onto AE data set:
+# Looking at creating TRTEMFL
+
+# Convert AESTDTC to AESTDT
+ae <- ae %>% mutate(AESTDT = as.Date(AESTDTC)) 
+# Checking if conversion worked properly
+ae %>% 
+  summarise(n_missing_stdt = sum(is.na(AESTDT)))
+# 26 are missing
+# Looking at which rows are missing
+ae %>% filter(is.na(AESTDT)) %>% 
+  select(AESTDTC)
+unique(ae$AESTDTC)
+
+# ---- TRTEMFL: Treatment-Emergent Flag (ADAE) -----------------------------
+# Rule: "Y" if the AE started on or after the first dose (TRTSDT), else "N".
+# AESTDTC can be partial (YYYY or YYYY-MM), so cut TRTSDT down to the same
+# length as the AE date and compare as text (ISO dates sort correctly).
+# If they are equal at that precision we can't tell, so flag "Y"
+# (conservative for a safety analysis).
+
+adae_try <- ae %>%
+  left_join(trt_dates %>% select(USUBJID, TRTSDT), by = "USUBJID") %>%
+  mutate(
+    trtsdt_cut = substr(format(TRTSDT, "%Y-%m-%d"), 1, nchar(AESTDTC)),
+    TRTEMFL    = if_else(AESTDTC >= trtsdt_cut, "Y", "N")
+  )
+
+# QC against the CDISC reference ADAE (key = subject + AE sequence number)
+adae_qc <- adae %>%
+  select(USUBJID, AESEQ, TRTEMFL_ref = TRTEMFL) %>%
+  left_join(adae_try %>% select(USUBJID, AESEQ, TRTEMFL),
+            by = c("USUBJID", "AESEQ")) %>%
+  summarise(
+    n_match   = sum(TRTEMFL == TRTEMFL_ref),
+    n_differ  = sum(TRTEMFL != TRTEMFL_ref),
+    n_missing = sum(is.na(TRTEMFL))
+  )
+adae_qc
+
