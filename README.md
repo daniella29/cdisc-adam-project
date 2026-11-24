@@ -30,11 +30,11 @@ output/      derived datasets and tables
 ```
 
 ## Status
-- [ ] 1. Explore the data
-- [ ] 2. ADSL mapping spec
-- [ ] 3. ADSL in R
-- [ ] 4. ADAE in R
-- [ ] 5. QC against CDISC reference
+- [x] 1. Explore the data
+- [ ] 2. ADSL mapping spec (in progress: `specs/adsl_notes.md` covers the variables derived so far)
+- [ ] 3. ADSL in R (in progress: TRTSDT, TRTEDT, TRTDUR, TRT01P, TRT01A, SAFFL, ITTFL)
+- [ ] 4. ADAE in R (in progress: TRTEMFL)
+- [ ] 5. QC against CDISC reference (done for each derived variable so far; differences documented)
 - [ ] 6. ADSL in SAS
 - [ ] 7. Tables
 
